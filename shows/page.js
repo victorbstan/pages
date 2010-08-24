@@ -1,11 +1,16 @@
 function(doc, req) {
+  // top two lines have to come first or else parent references in the ddoc
+  // which are created by calls to require will break JSON.stringify.
   var name, stub, ddoc = this,
     mustache = require("vendor/couchapp/lib/mustache"),
     wiki = require("lib/wiki"),
     data = {
+      ddoc : JSON.stringify(require("vendor/couchapp/lib/code").ddoc(ddoc), function(key, value) {
+        return (key == "parent") ? undefined : value;
+      }),
       docid : JSON.stringify(req.id),
       id : req.id,
-      path : "/page/"+req.id,
+      path : "../page/"+req.id,
       site_title : this.couchapp.name
     };
   if (doc) {
@@ -14,7 +19,7 @@ function(doc, req) {
     }
     data.title = doc.title;
     data.title_json = JSON.stringify(doc.title);
-    data.begin = "/";
+    data.begin = "";
     data.atts = [];
     if (doc._attachments) {
       for (name in doc._attachments) {
